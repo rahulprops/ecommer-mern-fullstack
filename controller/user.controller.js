@@ -96,7 +96,11 @@ export const getProfile = async (req, res) => {
   const userId = req.userId;
 
   try {
-    const user = await userModel;
+    const user = await userModel.findById(userId).select("-password");
+    if (!user) {
+      return error_logs(res, 404, "user not found");
+    }
+    return error_logs(res, 200, "get profile", user);
   } catch (err) {
     return error_logs(res, 500, `server error ${err.message}`);
   }
