@@ -2,6 +2,7 @@ import validator from "validator";
 import bcrypt from "bcrypt";
 import { error_logs } from "../middleware/error_log/error_log.js";
 import userModel from "../models/user.model.js";
+import { generateToken } from "../config/jwt.js";
 
 //! create user
 export const createUser = async (req, res) => {
@@ -23,6 +24,8 @@ export const createUser = async (req, res) => {
     const user = new userModel({ name, email, password: hashPassword });
     if (user) {
       await user.save();
+      // GENERATE TOKEN
+      generateToken(res, user._id);
       return error_logs(res, 201, "create user sucessful");
     } else {
       return error_logs(res, 400, "create user failed");
@@ -51,6 +54,7 @@ export const loginUser = async (req, res) => {
       isExistUser.password
     );
     if (isPasswordCheck) {
+      generateToken(res, isExistUser._id);
       return error_logs(res, 200, "user login sucessful");
     } else {
       return error_logs(res, 400, "password worng");

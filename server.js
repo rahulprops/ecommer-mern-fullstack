@@ -1,20 +1,22 @@
-import express from 'express'
-import 'dotenv/config.js'
-import dbConnect from './config/db.js'
-import userRouter from './routers/user.router.js'
-import bodyParser from 'body-parser'
+import express from "express";
+import "dotenv/config.js";
+import dbConnect from "./config/db.js";
+import userRouter from "./routers/user.router.js";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 
-const app=express()
-const port = process.env.PORT || 3000
+const app = express();
+const port = process.env.PORT || 3000;
 
 //! middleware
-app.use(bodyParser.urlencoded({extended:true}))
-app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(cookieParser());
 //! routes
-app.use("/api/user",userRouter)
+app.use("/api/user", userRouter);
 
 //! server start
-app.listen(port,()=>{
-    console.log(`server is running on prot http://localhost/${port}`)
-    dbConnect()
-})
+app.listen(port, () => {
+  console.log(`server is running on prot http://localhost/${port}`);
+  dbConnect();
+});
