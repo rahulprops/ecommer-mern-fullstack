@@ -91,3 +91,13 @@ export const allUsers = async (req, res) => {
     return error_logs(res, 500, `server error ${err.message}`);
   }
 };
+//! get profile
+export const getProfile = async (req, res) => {
+  const userId = req.userId;
+
+  try {
+    const user = await userModel;
+  } catch (err) {
+    return error_logs(res, 500, `server error ${err.message}`);
+  }
+};
