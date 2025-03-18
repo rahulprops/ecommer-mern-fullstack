@@ -8,7 +8,7 @@ const cartSchema=new Schema({
     },
     cartItems:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"cartItems",
+        ref:"cartItem",
         required:true,
     }],
     totalPrice:{
