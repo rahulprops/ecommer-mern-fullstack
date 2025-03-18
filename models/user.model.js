@@ -1,5 +1,4 @@
 import mongoose, { model, Schema } from "mongoose";
-import { type } from "os";
 
 const userSchema=new Schema({
     name:{
@@ -39,6 +38,6 @@ const userSchema=new Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"reviews"
     }],
-},{timeseries})
+},{timeseries:true})
 const userModel=model("user",userSchema)
 export default userModel;
