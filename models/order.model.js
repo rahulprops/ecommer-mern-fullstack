@@ -8,7 +8,7 @@ const orderSchema=new Schema({
     },
     orderItems:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"orderItems",
+        ref:"orderItem",
     }],
     orderDate:{
         type:Date,
