@@ -1,6 +1,7 @@
 import { error_logs } from "../middleware/error_log/error_log.js";
 import categoryModel from "../models/category.model.js";
 import productModel from "../models/product.model.js";
+import fs from "fs";
 //! create product
 export const createProduct = async (req, res) => {
   try {
@@ -72,5 +73,91 @@ export const deleteProduct = async (req, res) => {
     }
   } catch (err) {
     return error_logs(res, 500, `server error ${err.message}`);
+  }
+};
+
+//! update product
+
+export const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      title,
+      description,
+      price,
+      discountedPrice,
+      quantity,
+      brand,
+      sizes,
+      category,
+    } = req.body;
+
+    // Find the existing product
+    const existingProduct = await productModel.findById(id);
+    if (!existingProduct) {
+      return error_logs(res, 404, "Product not found");
+    }
+
+    // Handle image update
+    let imagePath = existingProduct.image;
+
+    if (req.file) {
+      const oldImagePath = existingProduct.image;
+      if (req.file.path == existingProduct.image) {
+        imagePath = existingProduct.image;
+      } else {
+        // Check if the old image exists before deleting
+        if (oldImagePath && fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+
+        imagePath = req.file.path; // Update with new image path
+      }
+    }
+
+    // Convert sizes string to an array (if sent as JSON string)
+    let parsedSizes = existingProduct.sizes;
+    if (sizes) {
+      try {
+        parsedSizes = JSON.parse(sizes);
+      } catch (error) {
+        return error_logs(
+          res,
+          400,
+          "Invalid sizes format. Expected JSON array."
+        );
+      }
+    }
+
+    // Check if category exists
+    if (category) {
+      const isCategory = await categoryModel.findOne({ name: category });
+      if (!isCategory) {
+        return error_logs(res, 404, "Category not found");
+      }
+      existingProduct.category = isCategory._id;
+    }
+
+    // Update product fields
+    existingProduct.title = title || existingProduct.title;
+    existingProduct.description = description || existingProduct.description;
+    existingProduct.price = price || existingProduct.price;
+    existingProduct.discountedPrice =
+      discountedPrice || existingProduct.discountedPrice;
+    existingProduct.quantity = quantity || existingProduct.quantity;
+    existingProduct.brand = brand || existingProduct.brand;
+    existingProduct.sizes = parsedSizes || existingProduct.sizes;
+    existingProduct.image = imagePath;
+
+    // Save updated product
+    await existingProduct.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      product: existingProduct,
+    });
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
   }
 };
