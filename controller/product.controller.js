@@ -22,7 +22,11 @@ export const createProduct = async (req, res) => {
     }
 
     // Get the uploaded image path
-    // const image = req.file ? req.file.path : null;
+    const image = req.file;
+    // console.log(image);
+    if (!image) {
+      return error_logs(res, 400, "please select image");
+    }
 
     // Convert sizes string to an array (if sent as JSON string)
     const parsedSizes = sizes ? JSON.parse(sizes) : [];
@@ -43,7 +47,7 @@ export const createProduct = async (req, res) => {
       quantity,
       brand,
       sizes: parsedSizes,
-      // image,
+      image: image.path,
       category: isCategory._id,
     });
 
