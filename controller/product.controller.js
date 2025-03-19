@@ -1,7 +1,7 @@
 import { error_logs } from "../middleware/error_log/error_log.js";
 import categoryModel from "../models/category.model.js";
 import productModel from "../models/product.model.js";
-
+//! create product
 export const createProduct = async (req, res) => {
   try {
     const {
@@ -57,5 +57,20 @@ export const createProduct = async (req, res) => {
     return error_logs(res, 201, "product create sucessful", newProduct);
   } catch (err) {
     return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};
+
+//! delete product
+export const deleteProduct = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deletePro = await productModel.findByIdAndDelete(id, { new: true });
+    if (deletePro) {
+      return error_logs(res, 200, "delete product done");
+    } else {
+      return error_logs(res, 400, "delete product failed");
+    }
+  } catch (err) {
+    return error_logs(res, 500, `server error ${err.message}`);
   }
 };
