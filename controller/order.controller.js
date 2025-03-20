@@ -178,3 +178,40 @@ export const shipOrder = async (req, res) => {
     return error_logs(res, 500, `Server error: ${err.message}`);
   }
 };
+//! deliverOrder
+
+export const deliverOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    // Find the order by ID
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return error_logs(res, 404, "Order not found");
+    }
+
+    // Check if the order is already delivered
+    if (order.orderStatus === "DELIVERED") {
+      return error_logs(res, 400, "Order is already delivered");
+    }
+
+    // Ensure the order is shipped before delivering
+    if (order.orderStatus !== "SHIPPED") {
+      return error_logs(res, 400, "Order must be shipped before delivery");
+    }
+
+    // Update order status to "DELIVERED" and set actual delivery date
+    order.orderStatus = "DELIVERED";
+    order.deliveryDate = new Date();
+
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Order has been delivered successfully",
+      order,
+    });
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};

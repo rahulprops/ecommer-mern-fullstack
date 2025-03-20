@@ -3,6 +3,7 @@ import { authUser } from "../middleware/auth/authUser.js";
 import {
   confirmOrder,
   createOrder,
+  deliverOrder,
   placedOrder,
   shipOrder,
 } from "../controller/order.controller.js";
@@ -12,4 +13,5 @@ orderRouter.post("/create", authUser, createOrder);
 orderRouter.post("/order-placed/:orderId", placedOrder);
 orderRouter.post("/corfirm-order/:orderId", confirmOrder);
 orderRouter.post("/ship-order/:orderId", shipOrder);
+orderRouter.post("/deliver-order/:orderId", deliverOrder);
 export default orderRouter;
