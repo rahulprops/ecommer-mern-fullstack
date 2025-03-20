@@ -152,3 +152,39 @@ export const updateCart = async (req, res) => {
     return error_logs(res, 500, `Server error: ${err.message}`);
   }
 };
+
+//! remove cart items
+
+export const removeCartItem = async (req, res) => {
+  try {
+    const userId = req.userId; // Get the user ID from authentication middleware
+    const cartItemId = req.params.cartItemId; // Get cart item ID from request params
+
+    // Find the cart item
+    const cartItem = await cartItemModel.findOne({ _id: cartItemId, userId });
+    if (!cartItem) {
+      return error_logs(res, 404, "Cart item not found");
+    }
+
+    // Find the user's cart
+    const cart = await cartModel.findOne({ user: userId });
+    if (!cart) {
+      return error_logs(res, 404, "Cart not found");
+    }
+
+    // Remove the item from the cartItems array
+    cart.cartItems = cart.cartItems.filter(
+      (item) => item.toString() !== cartItemId
+    );
+
+    // Save the updated cart
+    await cart.save();
+
+    // Delete the cart item from the database
+    await cartItemModel.findByIdAndDelete(cartItemId);
+
+    return error_logs(res, 200, "Item removed from cart");
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};
