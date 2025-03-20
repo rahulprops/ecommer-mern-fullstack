@@ -131,3 +131,21 @@ export const deleteAddress = async (req, res) => {
     return error_logs(res, 500, `Server error: ${err.message}`);
   }
 };
+
+//! all address
+export const allAddress = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    // Find all addresses for the user
+    const addresses = await addressModel.find({ user: userId });
+
+    if (!addresses || addresses.length === 0) {
+      return error_logs(res, 404, "No addresses found for this user");
+    }
+
+    return error_logs(res, 200, "address get sucessful", addresses);
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};
