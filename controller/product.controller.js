@@ -224,3 +224,18 @@ export const getAllProduct = async (req, res) => {
     return error_logs(res, 500, `Server error: ${err.message}`);
   }
 };
+//! findProductbyid
+export const findProductById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const product = await productModel.findById(id);
+    if (product) {
+      return error_logs(res, 200, "get product", product);
+    } else {
+      return error_logs(res, 400, "failed product ");
+    }
+  } catch (err) {
+    return error_logs(res, 500, `server error ${err.message}`);
+  }
+};

@@ -3,6 +3,7 @@ import { authUser } from "../middleware/auth/authUser.js";
 import {
   createProduct,
   deleteProduct,
+  findProductById,
   getAllProduct,
   updateProduct,
 } from "../controller/product.controller.js";
@@ -17,5 +18,6 @@ productRouter.put(
   updateProduct
 );
 productRouter.get("/", getAllProduct);
+productRouter.get("/:id", findProductById);
 productRouter.delete("/delete/:id", authUser, deleteProduct);
 export default productRouter;
