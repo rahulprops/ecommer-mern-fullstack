@@ -95,3 +95,39 @@ export const updateAddress = async (req, res) => {
     return error_logs(res, 500, `Server error: ${err.message}`);
   }
 };
+
+//! delete address
+
+export const deleteAddress = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { addressId } = req.params;
+
+    // Find the address
+    const address = await addressModel.findById(addressId);
+    if (!address) {
+      return error_logs(res, 404, "Address not found");
+    }
+
+    // Ensure the user owns the address
+    if (address.user.toString() !== userId.toString()) {
+      return error_logs(
+        res,
+        403,
+        "You are not authorized to delete this address"
+      );
+    }
+
+    // Delete the address
+    await addressModel.findByIdAndDelete(addressId);
+
+    // Remove the address from the user's address list
+    await userModel.findByIdAndUpdate(userId, {
+      $pull: { address: addressId },
+    });
+
+    return error_logs(res, 200, "delete address sucessful");
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};
