@@ -3,6 +3,7 @@ import orderItemModel from "../models/orderItem.model.js";
 import cartModel from "../models/cart.model.js";
 import addressModel from "../models/address.model.js";
 import { error_logs } from "../middleware/error_log/error_log.js";
+//! create order
 
 export const createOrder = async (req, res) => {
   try {
@@ -76,6 +77,69 @@ export const createOrder = async (req, res) => {
     await cart.save();
 
     return error_logs(res, 201, "order placed", newOrder);
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};
+
+//! placedorder
+
+export const placedOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    // Find the order
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return error_logs(res, 404, "Order not found");
+    }
+
+    // Update order status to 'COMPLETE' when placed
+    order.orderStatus = "COMPLETE";
+    order.deliveryDate = new Date(); // Set delivery date to current date
+
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Order placed successfully",
+      order,
+    });
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};
+//! confirt order
+
+export const confirmOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    // Find the order by ID
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return error_logs(res, 404, "Order not found");
+    }
+
+    // Check if the order is already confirmed
+    if (order.orderStatus === "CONFIRMED") {
+      return error_logs(res, 400, "Order is already confirmed");
+    }
+
+    // Update order status to "CONFIRMED"
+    order.orderStatus = "CONFIRMED";
+
+    // Optional: If payment is required, check and update payment status
+    if (
+      order.paymentDetails &&
+      order.paymentDetails.paymentStatus === "PENDING"
+    ) {
+      order.paymentDetails.paymentStatus = "CONFIRMED";
+    }
+
+    await order.save();
+
+    return error_logs(res, 200, "order confirmsucessful", order);
   } catch (err) {
     return error_logs(res, 500, `Server error: ${err.message}`);
   }
