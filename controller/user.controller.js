@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { error_logs } from "../middleware/error_log/error_log.js";
 import userModel from "../models/user.model.js";
 import { generateToken } from "../config/jwt.js";
+import cartModel from "../models/cart.model.js";
 
 //! create user
 export const createUser = async (req, res) => {
@@ -24,6 +25,8 @@ export const createUser = async (req, res) => {
     const user = new userModel({ name, email, password: hashPassword });
     if (user) {
       await user.save();
+      const createCart = new cartModel({ user });
+      await createCart.save();
       // GENERATE TOKEN
       generateToken(res, user._id);
       return error_logs(res, 201, "create user sucessful");
