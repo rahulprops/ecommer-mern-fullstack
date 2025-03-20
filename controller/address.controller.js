@@ -53,3 +53,45 @@ export const createAddress = async (req, res) => {
     return error_logs(res, 500, `Server error: ${err.message}`);
   }
 };
+
+//! update address
+
+export const updateAddress = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { addressId } = req.params;
+    const { firstName, lastName, streetAddress, city, state, zipcode, mobile } =
+      req.body;
+
+    // Find the existing address
+    const address = await addressModel.findById(addressId);
+    if (!address) {
+      return error_logs(res, 404, "Address not found");
+    }
+
+    // Ensure that the user owns this address
+    if (address.user.toString() !== userId.toString()) {
+      return error_logs(
+        res,
+        403,
+        "You are not authorized to update this address"
+      );
+    }
+
+    // Update only the provided fields
+    address.firstName = firstName || address.firstName;
+    address.lastName = lastName || address.lastName;
+    address.streetAddress = streetAddress || address.streetAddress;
+    address.city = city || address.city;
+    address.state = state || address.state;
+    address.zipcode = zipcode || address.zipcode;
+    address.mobile = mobile || address.mobile;
+
+    // Save the updated address
+    await address.save();
+
+    return error_logs(res, 200, "address update sucessful", address);
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};
