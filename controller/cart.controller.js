@@ -31,6 +31,7 @@ export const findUserCart = async (req, res) => {
   }
 };
 
+//! addtocart
 export const addCartItem = async (req, res) => {
   try {
     const userId = req.userId;
@@ -89,6 +90,64 @@ export const addCartItem = async (req, res) => {
         cartItem: createdCartItem,
       });
     }
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};
+
+//! update cart
+
+export const updateCart = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { cartItemId } = req.params; // Get cart item ID from URL params
+    const { quantity, size } = req.body; // Get updated fields
+
+    // Find the cart item
+    let cartItem = await cartItemModel.findOne({
+      _id: cartItemId,
+      userId,
+    });
+    if (!cartItem) {
+      return error_logs(res, 404, "Cart item not found");
+    }
+
+    // Validate product existence
+    const product = await productModel.findById(cartItem.product);
+    if (!product) {
+      return error_logs(res, 404, "Product no longer exists");
+    }
+
+    //  Update quantity (ensure it's at least 1)
+    if (quantity !== undefined) {
+      // Ensure quantity is at least 1
+      if (quantity < 1) {
+        return error_logs(res, 400, "Quantity must be at least 1");
+      }
+
+      // Increment or decrement based on the request type
+      if (req.body.action === "increment") {
+        cartItem.quantity += 1;
+      } else if (req.body.action === "decrement") {
+        if (cartItem.quantity > 1) {
+          cartItem.quantity -= 1;
+        } else {
+          return error_logs(res, 400, "Minimum quantity must be 1");
+        }
+      } else {
+        cartItem.quantity = quantity; // Directly update if action isn't provided
+      }
+    }
+
+    // Update size if provided
+    if (size) {
+      cartItem.size = size;
+    }
+
+    //  Save updated cart item
+    await cartItem.save();
+
+    return error_logs(res, 200, "upate cartItems", cartItem);
   } catch (err) {
     return error_logs(res, 500, `Server error: ${err.message}`);
   }
