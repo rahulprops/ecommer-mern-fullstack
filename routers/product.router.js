@@ -3,6 +3,7 @@ import { authUser } from "../middleware/auth/authUser.js";
 import {
   createProduct,
   deleteProduct,
+  getAllProduct,
   updateProduct,
 } from "../controller/product.controller.js";
 import upload from "../middleware/multer/multer.js";
@@ -15,5 +16,6 @@ productRouter.put(
   upload.single("image"),
   updateProduct
 );
+productRouter.get("/", getAllProduct);
 productRouter.delete("/delete/:id", authUser, deleteProduct);
 export default productRouter;

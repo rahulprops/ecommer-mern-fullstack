@@ -161,3 +161,66 @@ export const updateProduct = async (req, res) => {
     return error_logs(res, 500, `Server error: ${err.message}`);
   }
 };
+
+//! get all product
+
+export const getAllProduct = async (req, res) => {
+  try {
+    const { category, color, sizes, minPrice, maxPrice, minDiscount, stock } =
+      req.query;
+
+    let filter = {}; // Dynamic filter object
+
+    // 🟢 Category Filter
+    if (category) {
+      const isCategory = await categoryModel.findOne({ name: category });
+      if (isCategory) {
+        filter.category = isCategory._id;
+      } else {
+        return error_logs(res, 404, "Category not found");
+      }
+    }
+
+    // 🟢 Price Range Filter
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = parseFloat(minPrice); // Minimum price
+      if (maxPrice) filter.price.$lte = parseFloat(maxPrice); // Maximum price
+    }
+
+    // 🟢 Discount Filter
+    if (minDiscount) {
+      filter.discountedPrice = { $gte: parseFloat(minDiscount) };
+    }
+
+    // 🟢 Stock Filter (Only products in stock)
+    if (stock === "true") {
+      filter.quantity = { $gt: 0 }; // Only products with stock greater than 0
+    }
+
+    // 🟢 Sizes Filter (Checking if the size exists in the product's sizes array)
+    if (sizes) {
+      filter["sizes.name"] = { $in: sizes.split(",") };
+    }
+
+    // 🟢 Color Filter (Assuming color is stored in a 'color' field)
+    if (color) {
+      filter.color = color;
+    }
+
+    // Fetch products with filtering and populate category details
+    const products = await productModel.find(filter).populate("category");
+
+    if (!products.length) {
+      return error_logs(res, 404, "No products found with the given criteria");
+    }
+
+    return res.status(200).json({
+      success: true,
+      count: products.length,
+      products,
+    });
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};
