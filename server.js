@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import categoryRouter from "./routers/category.router.js";
 import productRouter from "./routers/product.router.js";
 import cartRouter from "./routers/cart.router.js";
+import addressRouter from "./routers/address.router.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -20,6 +21,7 @@ app.use("/api/user", userRouter);
 app.use("/api/category", categoryRouter);
 app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
+app.use("/api/address", addressRouter);
 
 //! server start
 app.listen(port, () => {
