@@ -284,3 +284,20 @@ export const userOrderHistory = async (req, res) => {
     return error_logs(res, 500, `Server error: ${err.message}`);
   }
 };
+
+//! get all order
+export const getAllOrders = async (req, res) => {
+  try {
+    const orders = await orderModel.find().populate({
+      path: "orderItems",
+      populate: { path: "product" }, // Populate product details inside orderItems
+    });
+
+    if (!orders || orders.length === 0) {
+      return error_logs(res, 404, "No orders found");
+    }
+    return error_logs(res, 200, "all orders", orders);
+  } catch (err) {
+    return error_logs(res, 500, `server error ${err.message}`);
+  }
+};
