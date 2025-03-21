@@ -3,6 +3,8 @@ import orderItemModel from "../models/orderItem.model.js";
 import cartModel from "../models/cart.model.js";
 import addressModel from "../models/address.model.js";
 import { error_logs } from "../middleware/error_log/error_log.js";
+import productModel from "../models/product.model.js";
+
 //! create order
 
 export const createOrder = async (req, res) => {
@@ -210,6 +212,73 @@ export const deliverOrder = async (req, res) => {
       success: true,
       message: "Order has been delivered successfully",
       order,
+    });
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};
+
+//! cancelorder
+
+export const cancelOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    // Find the order by ID
+    const order = await orderModel.findById(orderId).populate("orderItems");
+    if (!order) {
+      return error_logs(res, 404, "Order not found");
+    }
+
+    // Prevent cancellation if order is already delivered
+    if (order.orderStatus === "DELIVERED") {
+      return error_logs(res, 400, "Cannot cancel a delivered order");
+    }
+
+    // Update stock quantities when an order is canceled
+    for (const item of order.orderItems) {
+      const product = await productModel.findById(item.product);
+      if (product) {
+        product.quantity += item.quantity; // Restore stock
+        await product.save();
+      }
+    }
+
+    // Update order status to "CANCELED"
+    order.orderStatus = "CANCELED";
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Order has been canceled successfully",
+      order,
+    });
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};
+
+//! user order history
+
+export const userOrderHistory = async (req, res) => {
+  const userId = req.userId;
+  try {
+    // Fetch all completed orders for the user
+    const orders = await orderModel
+      .find({ user: userId, orderStatus: "COMPLETE" })
+      .populate({
+        path: "orderItems",
+        populate: { path: "product" }, // Populate product details inside orderItems
+      });
+
+    if (!orders || orders.length === 0) {
+      return error_logs(res, 404, "No completed orders found");
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User order history retrieved successfully",
+      orders,
     });
   } catch (err) {
     return error_logs(res, 500, `Server error: ${err.message}`);
