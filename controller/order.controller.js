@@ -301,3 +301,33 @@ export const getAllOrders = async (req, res) => {
     return error_logs(res, 500, `server error ${err.message}`);
   }
 };
+
+//! delete order
+
+export const deleteOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the order
+    const order = await orderModel.findById(id);
+    if (!order) {
+      return error_logs(res, 404, "Order not found");
+    }
+
+    // Ensure only PENDING or CANCELLED orders can be deleted
+    if (order.orderStatus !== "PENDING" && order.orderStatus !== "CANCELED") {
+      return error_logs(
+        res,
+        400,
+        "Only pending or cancelled orders can be deleted"
+      );
+    }
+
+    // Delete the order
+    await orderModel.findByIdAndDelete(id);
+
+    return error_logs(res, 200, "delete order sucessful");
+  } catch (err) {
+    return error_logs(res, 500, `Server error: ${err.message}`);
+  }
+};

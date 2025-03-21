@@ -4,6 +4,7 @@ import {
   cancelOrder,
   confirmOrder,
   createOrder,
+  deleteOrder,
   deliverOrder,
   getAllOrders,
   placedOrder,
@@ -20,4 +21,5 @@ orderRouter.post("/deliver-order/:orderId", deliverOrder);
 orderRouter.post("/cancel-order/:orderId", cancelOrder);
 orderRouter.get("/user-order-history", authUser, userOrderHistory);
 orderRouter.get("/all-orders", getAllOrders);
+orderRouter.delete("/delete/:id", deleteOrder);
 export default orderRouter;
